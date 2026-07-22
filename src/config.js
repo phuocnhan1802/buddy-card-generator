@@ -17,7 +17,7 @@ const config = {
   // ----------------------------------------------------------
   // Paste the deployed Web App URL from Google Apps Script here.
   // See /google-apps-script/Code.gs + README.md for setup steps.
-  GOOGLE_SCRIPT_URL: "https:/https://script.google.com/macros/s/AKfycbyZDsczOZy-a5-TwQxg33dYxdWQXwrGRxpz6HSckGIyNQipRBNclGgQAXrF-bUYjUIxtg/exec",
+  GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzTZtYaD2wbUye7IFmzuqyHRDqyBmapOIdXyebg6iPKxq0mPZXhHSxvGyUNvExi_wfFNA/exec",
 
   // Optional: shown in the footer / error messages so participants
   // know which sheet/workshop this instance is wired to.
