@@ -157,16 +157,29 @@ const CardPreview = forwardRef(function CardPreview({ user, scale = 1 }, ref) {
             </Section>
           )}
 
-          {hasContribute && (
-            <Section tone="blue" icon={Users} label="I can contribute" s={s}>
-              <BulletList items={contributeLines} tone="blue" fontSize={s.body} iconSize={s.bulletIcon} gap={s.pad * 0.28} />
-            </Section>
-          )}
-
-          {hasNeed && (
-            <Section tone="green" icon={Flag} label="I need" s={s}>
-              <BulletList items={needLines} tone="green" fontSize={s.body} iconSize={s.bulletIcon} gap={s.pad * 0.28} />
-            </Section>
+          {(hasContribute || hasNeed) && (
+            <div className="flex" style={{ gap: s.pad * 0.4 }}>
+              {hasContribute && (
+                <div className="flex-1 min-w-0">
+                  <Section tone="blue" icon={Users} label="Contribute" s={s}>
+                    <BulletList
+                      items={contributeLines}
+                      tone="blue"
+                      fontSize={s.body}
+                      iconSize={s.bulletIcon}
+                      gap={s.pad * 0.28}
+                    />
+                  </Section>
+                </div>
+              )}
+              {hasNeed && (
+                <div className="flex-1 min-w-0">
+                  <Section tone="green" icon={Flag} label="Need" s={s}>
+                    <BulletList items={needLines} tone="green" fontSize={s.body} iconSize={s.bulletIcon} gap={s.pad * 0.28} />
+                  </Section>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
