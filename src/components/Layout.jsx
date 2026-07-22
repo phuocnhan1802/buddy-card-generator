@@ -16,7 +16,7 @@ export default function Layout({ stepNumber, formPanel, previewPanel }) {
         </div>
 
         {/* RIGHT — live preview, sticky so it never scrolls away */}
-        <div className="bg-white lg:border-l border-line flex items-start justify-center px-6 py-10 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto thin-scroll">
+        <div className="bg-white lg:border-l border-line flex items-start justify-center px-6 py-10 lg:sticky lg:top-0 lg:h-screen lg:overflow-auto thin-scroll">
           <div className="animate-fadeIn my-auto">{previewPanel}</div>
         </div>
       </div>

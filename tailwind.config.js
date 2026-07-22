@@ -12,6 +12,12 @@ export default {
         line: "#ECEAE6",
         success: "#34D399",
         danger: "#EF4444",
+        // KV (Manager Makes Movers) palette — used only inside the
+        // Buddy Card / Buddy Team components, kept separate from the
+        // app's own coral/violet chrome.
+        kvblue: { DEFAULT: "#1E3FCC", dark: "#152C99", light: "#4E6BE0" },
+        kvgreen: "#B6FF3A",
+        kvink: "#0F1B4D",
       },
       borderRadius: {
         sm: "10px",
@@ -26,6 +32,7 @@ export default {
         display: ["'Plus Jakarta Sans'", "sans-serif"],
         body: ["'Plus Jakarta Sans'", "sans-serif"],
         mono: ["'JetBrains Mono'", "monospace"],
+        kv: ["'Oswald'", "sans-serif"],
       },
       keyframes: {
         fadeIn: { from: { opacity: 0, transform: "translateY(6px)" }, to: { opacity: 1, transform: "translateY(0)" } },

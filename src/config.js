@@ -39,15 +39,14 @@ const config = {
   CARD_PREVIEW_WIDTH: 320,
   CARD_PREVIEW_HEIGHT: 569,
 
-  // Buddy Team card (3 people combined) collects 3 full-size
-  // individual cards stacked into one tall image — so the export
-  // height is 3x a single card's height, same width. Nothing is
-  // shrunk: every field (avatar, interests, rituals, contribute,
-  // need) stays fully legible at the same scale as a solo card.
-  BUDDY_EXPORT_WIDTH: 1080,
-  BUDDY_EXPORT_HEIGHT: 1920 * 3, // 5760 — one full card's height per buddy
-  BUDDY_CARD_PREVIEW_WIDTH: 320,
-  BUDDY_CARD_PREVIEW_HEIGHT: 569 * 3,
+  // Buddy Team card = 3 individual cards placed side by side
+  // (per design review). Export is therefore 3x the WIDTH of a
+  // single card at the same height — every buddy keeps their own
+  // full 1080x1920 card untouched, nothing is shrunk or stacked.
+  BUDDY_EXPORT_WIDTH: 1080 * 3,
+  BUDDY_EXPORT_HEIGHT: 1920,
+  BUDDY_CARD_PREVIEW_WIDTH: 320 * 3,
+  BUDDY_CARD_PREVIEW_HEIGHT: 569,
 
   // ----------------------------------------------------------
   // AVATAR HANDLING
@@ -78,8 +77,33 @@ const config = {
   LOGO_PATH: "/assets/logo.png",
 
   // ----------------------------------------------------------
-  // THEME
+  // KV THEME — Manager Makes Movers Key Visual
   // ----------------------------------------------------------
+  // Used ONLY by CardPreview / BuddyPreview (the exported Buddy
+  // Card image). The rest of the app (buttons, forms, header)
+  // keeps its own coral/violet theme above — the two are
+  // intentionally separate design systems.
+  KV_THEME: {
+    colors: {
+      blue: "#1E3FCC",
+      blueDark: "#152C99",
+      blueLight: "#4E6BE0",
+      neonGreen: "#B6FF3A",
+      ink: "#0F1B4D", // body text on white cards
+      skyTop: "#EAF4FF",
+      skyBottom: "#0F2AA8",
+      white: "#FFFFFF",
+    },
+    // Baseline "comfortable" content counts. If a card has more
+    // items than this, font sizes scale down slightly (within
+    // KV_MIN_SCALE) so everything still fits the fixed
+    // 1080x1920 canvas instead of overflowing or getting cut off.
+    baselineInterests: 3,
+    baselineRitualLines: 5,
+    baselineGiveGetLines: 4,
+  },
+  KV_MIN_SCALE: 0.72, // never shrink content below 72% of base size
+
   THEME: {
     colors: {
       // Primary brand accent — used for CTAs, active states, tags
