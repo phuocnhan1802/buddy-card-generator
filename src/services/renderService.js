@@ -23,6 +23,43 @@ import html2canvas from "html2canvas";
 import config from "../config";
 
 /**
+ * Waits for web fonts and every <img> inside `node` to finish
+ * loading/decoding before we let html2canvas capture it. Without
+ * this, on slower connections (very common on mobile) html2canvas
+ * can fire while a custom font is still swapping in or an avatar
+ * image hasn't finished loading — producing exactly the symptoms
+ * reported: missing spaces / overlapping glyphs (wrong font metrics
+ * mid-swap), blank avatars (image not yet decoded), and content
+ * clipped at the bottom (text wrapped differently under the
+ * fallback font than under the real one).
+ */
+async function waitForAssets(node) {
+  if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+    try {
+      await Promise.race([document.fonts.ready, new Promise((resolve) => setTimeout(resolve, 3000))]);
+    } catch {
+      // Some browsers can reject/throw here — safe to ignore and continue.
+    }
+  }
+
+  const images = Array.from(node.querySelectorAll("img"));
+  await Promise.all(
+    images.map((img) => {
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+      return new Promise((resolve) => {
+        img.addEventListener("load", resolve, { once: true });
+        img.addEventListener("error", resolve, { once: true }); // don't hang forever on a broken image
+        setTimeout(resolve, 4000); // absolute safety net
+      });
+    })
+  );
+
+  // Give the browser two paint frames to settle any layout reflow
+  // that happens right after fonts/images finish resolving.
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+/**
  * Renders `node` (a DOM element sized at its natural on-screen
  * preview dimensions — whatever `scale` it's currently displayed
  * at) to a PNG at the exact `exportWidth` x `exportHeight`, then
@@ -30,6 +67,8 @@ import config from "../config";
  */
 export async function exportNodeAsPng(node, { exportWidth, exportHeight, filename }) {
   if (!node) throw new Error("Nothing to export yet.");
+
+  await waitForAssets(node);
 
   const rect = node.getBoundingClientRect();
   const scale = exportWidth / rect.width;

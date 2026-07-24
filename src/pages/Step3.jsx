@@ -19,6 +19,7 @@ export default function Step3() {
   const [previewGenerated, setPreviewGenerated] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState("");
+  const [matchWarning, setMatchWarning] = useState("");
   const teamRef = useRef(null);
   const teamScale = useResponsiveScale(config.BUDDY_CARD_PREVIEW_WIDTH);
 
@@ -40,10 +41,16 @@ export default function Step3() {
   async function handleDownload() {
     setDownloading(true);
     setError("");
+    setMatchWarning("");
     try {
       // Record the match in the Sheet only at download time (per request),
       // so casually generating a preview doesn't write anything yet.
-      await saveMatch({ domain: user.domain, buddy1: buddyA.domain, buddy2: buddyB.domain });
+      const matchSaved = await saveMatch({ domain: user.domain, buddy1: buddyA.domain, buddy2: buddyB.domain });
+      if (!matchSaved) {
+        setMatchWarning(
+          'Card downloaded, but the match wasn\'t recorded in the Sheet — make sure it has "Buddy 1" and "Buddy 2" columns.'
+        );
+      }
       await downloadBuddyTeam(teamRef.current, [buddyA.name, user.name, buddyB.name]);
     } catch (err) {
       setError(err.message || "Could not download the Buddy Team card.");
@@ -67,6 +74,7 @@ export default function Step3() {
           <BuddyDomainField label="Buddy 2" domain={domainB} setDomain={setDomainB} buddy={buddyB} setBuddy={setBuddyB} />
 
           {error && <p className="text-sm text-danger">{error}</p>}
+          {matchWarning && <p className="text-sm text-coral-dark">{matchWarning}</p>}
 
           <div className="flex items-center gap-3">
             <Button variant="secondary" onClick={() => setStep("step2")}>

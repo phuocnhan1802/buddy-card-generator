@@ -111,7 +111,7 @@ export async function saveMatch({ domain, buddy1, buddy2 }) {
   if (!data?.success) {
     throw new Error(data?.error || "Could not save your buddy match. Please try again.");
   }
-  return true;
+  return Boolean(data.matchSaved);
 }
 
 /** Normalizes whatever shape the Apps Script returns into a consistent client-side object. */

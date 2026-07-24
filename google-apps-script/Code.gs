@@ -11,7 +11,11 @@
  * the Sheet directly.
  *
  * Expected sheet columns (row 1 = headers, exact names below):
- *   Domain | Name | Avatar URL | Interests | Rituals | Contribute | Need
+ *   Domain | Name | Avatar URL | Interests | Rituals | Contribute | Need | Buddy 1 | Buddy 2
+ *
+ * Interests and Rituals are stored as plain, human-readable text in
+ * their cells (not JSON) — see serializeInterests/serializeRituals
+ * and parseInterestsText/parseRitualsText below.
  * ============================================================
  */
 
@@ -58,8 +62,8 @@ function doPost(e) {
       return jsonResponse({ success: true });
     }
     if (payload.action === "saveMatch") {
-      saveMatchRecord(payload);
-      return jsonResponse({ success: true });
+      const matchSaved = saveMatchRecord(payload);
+      return jsonResponse({ success: true, matchSaved: matchSaved });
     }
     return jsonResponse({ success: false, error: "Unknown action" }, 400);
   } catch (err) {
@@ -88,8 +92,8 @@ function getUserRecord(domain) {
     domain: record[COLUMNS.DOMAIN] || "",
     name: record[COLUMNS.NAME] || "",
     avatar: record[COLUMNS.AVATAR] || "",
-    interests: safeParseJson(record[COLUMNS.INTERESTS], []),
-    rituals: safeParseJson(record[COLUMNS.RITUALS], []),
+    interests: parseInterestsText(record[COLUMNS.INTERESTS]),
+    rituals: parseRitualsText(record[COLUMNS.RITUALS]),
     contribute: record[COLUMNS.CONTRIBUTE] || "",
     need: record[COLUMNS.NEED] || "",
   };
@@ -111,8 +115,8 @@ function saveUserRecord(payload) {
 
   const updates = {
     [COLUMNS.AVATAR]: payload.avatar || "",
-    [COLUMNS.INTERESTS]: JSON.stringify(payload.interests || []),
-    [COLUMNS.RITUALS]: JSON.stringify(payload.rituals || []),
+    [COLUMNS.INTERESTS]: serializeInterests(payload.interests),
+    [COLUMNS.RITUALS]: serializeRituals(payload.rituals),
     [COLUMNS.CONTRIBUTE]: payload.contribute || "",
     [COLUMNS.NEED]: payload.need || "",
   };
@@ -144,12 +148,13 @@ function saveMatchRecord(payload) {
   const buddy1Col = headers.indexOf(COLUMNS.BUDDY1);
   const buddy2Col = headers.indexOf(COLUMNS.BUDDY2);
   if (buddy1Col === -1 || buddy2Col === -1) {
-    return; // Sheet hasn't been updated with the new columns — skip quietly
+    return false; // Sheet hasn't been updated with the new columns — skip quietly, tell the client
   }
 
   writeMatchToRow(domain, buddy1, buddy2, buddy1Col, buddy2Col);
   writeMatchToRow(buddy1, domain, buddy2, buddy1Col, buddy2Col);
   writeMatchToRow(buddy2, domain, buddy1, buddy1Col, buddy2Col);
+  return true;
 }
 
 function writeMatchToRow(rowDomain, otherA, otherB, buddy1Col, buddy2Col) {
@@ -195,12 +200,71 @@ function normalizeDomain(domain) {
   return (domain || "").toString().trim().toLowerCase();
 }
 
-function safeParseJson(value, fallback) {
-  if (!value) return fallback;
+/**
+ * Interests are stored as a simple comma-separated line, e.g.:
+ *   Coffee, Reading, Music
+ * (not a JSON array) so the cell is readable directly in the Sheet.
+ */
+function serializeInterests(interests) {
+  return (interests || []).filter(Boolean).join(", ");
+}
+
+function parseInterestsText(raw) {
+  if (!raw) return [];
+  // Backward-compat: rows saved before this change may still hold a
+  // JSON array — read those correctly instead of showing garbage.
+  const legacy = tryParseJsonArray(raw);
+  if (legacy) return legacy;
+
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Rituals are stored as one plain line per ritual — "emoji text" —
+ * separated by newlines, e.g.:
+ *   💬 When starting a 1:1, I will ask about my member's feeling first
+ *   💬 When hiring, I will ask myself what outcomes this role must deliver
+ * (not a JSON array of objects) so the cell is readable directly in
+ * the Sheet, with no ids or nested structure.
+ */
+function serializeRituals(rituals) {
+  return (rituals || [])
+    .filter((r) => r && r.text)
+    .map((r) => `${r.emoji || "💬"} ${r.text}`.trim())
+    .join("\n");
+}
+
+function parseRitualsText(raw) {
+  if (!raw) return [];
+  // Backward-compat: rows saved before this change may still hold a
+  // JSON array of {id, emoji, text} objects — read those correctly.
+  const legacy = tryParseJsonArray(raw);
+  if (legacy) return legacy;
+
+  return raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, i) => {
+      const match = line.match(/^(\S+)\s+([\s\S]*)$/);
+      if (match) {
+        return { id: "ritual-" + i, emoji: match[1], text: match[2] };
+      }
+      return { id: "ritual-" + i, emoji: "💬", text: line };
+    });
+}
+
+function tryParseJsonArray(raw) {
+  const trimmed = (raw || "").trim();
+  if (!trimmed.startsWith("[")) return null; // plain text never starts with '[' — quick skip
   try {
-    return JSON.parse(value);
+    const parsed = JSON.parse(trimmed);
+    return Array.isArray(parsed) ? parsed : null;
   } catch (e) {
-    return fallback;
+    return null;
   }
 }
 
