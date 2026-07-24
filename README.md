@@ -25,11 +25,17 @@ app or point it at a new workshop's Sheet.
 Create a Google Sheet with a tab named `Sheet1` (or update `SHEET_NAME` in
 `Code.gs`) with these exact column headers in row 1:
 
-| Domain | Name | Avatar URL | Interests | Rituals | Contribute | Need |
-|---|---|---|---|---|---|---|
+| Domain | Name | Avatar URL | Interests | Rituals | Contribute | Need | Buddy 1 | Buddy 2 |
+|---|---|---|---|---|---|---|---|---|
 
 Pre-fill **Domain** and **Name** for every participant before the workshop.
 Leave the other columns empty — the app fills them in.
+
+**If you already have a Sheet from before**, just add the two new columns
+**"Buddy 1"** and **"Buddy 2"** (exact spelling/capitalization) at the end —
+these get filled in automatically once someone downloads their Buddy Team
+card in Step 3 (recording who they matched with). If these columns are
+missing, the app still works fine — it just skips saving the match.
 
 ## 3. Deploy the Google Apps Script backend
 
@@ -123,3 +129,14 @@ google-apps-script/
 - **The Card is a live React component, not a flattened image** — every
   field renders from real data, and the exact same component is used for
   on-screen preview and for the html2canvas PNG export.
+- **Download uses the native Web Share sheet on supported mobile browsers**
+  (`navigator.share` with an image file), since there is no browser API
+  that can silently save an image straight to the phone's Photo library —
+  Apple/Google intentionally require a user-facing step for that. On
+  unsupported browsers (most desktop browsers), it falls back to a normal
+  file download.
+- **The card preview shrinks responsively to fit the screen** (see
+  `useResponsiveScale`) so it never overflows on narrow phones and the
+  Buddy Team card (3 cards wide) doesn't require horizontal scrolling —
+  it just displays smaller. The downloaded PNG is always exported at full
+  resolution regardless of what size it's shown on screen.

@@ -8,12 +8,14 @@ import RitualEditor from "../components/RitualEditor";
 import Button from "../components/Button";
 import { useUserData } from "../hooks/useUserData";
 import { saveUser } from "../services/googleApi";
+import { useResponsiveScale } from "../hooks/useResponsiveScale";
 
 export default function Step1() {
   const { user, updateUser, setStep } = useUserData();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const cardScale = useResponsiveScale(config.CARD_PREVIEW_WIDTH);
 
   const hasMinRituals = (user.rituals?.length || 0) >= config.REQUIRED_RITUAL_COUNT;
 
@@ -57,7 +59,7 @@ export default function Step1() {
               type="text"
               value={user.name}
               readOnly
-              className="w-full rounded-sm border border-line bg-canvas px-4 py-2.5 text-ink-soft cursor-not-allowed"
+              className="w-full rounded-sm border border-line bg-canvas px-4 py-2.5 text-base md:text-sm text-ink-soft cursor-not-allowed"
             />
           </Field>
 
@@ -77,7 +79,7 @@ export default function Step1() {
           </Button>
         </div>
       }
-      previewPanel={<CardPreview user={user} />}
+      previewPanel={<CardPreview user={user} scale={cardScale} />}
     />
   );
 }

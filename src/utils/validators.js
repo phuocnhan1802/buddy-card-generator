@@ -6,8 +6,7 @@ export function isValidInterest(text) {
 }
 
 export function isValidRitualText(text) {
-  const trimmed = text.trim();
-  return trimmed.length > 0 && trimmed.length <= config.MAX_RITUAL_TEXT_LENGTH;
+  return text.trim().length > 0;
 }
 
 export function normalizeDomain(domain) {

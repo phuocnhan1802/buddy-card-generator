@@ -25,6 +25,8 @@ const COLUMNS = {
   RITUALS: "Rituals",
   CONTRIBUTE: "Contribute",
   NEED: "Need",
+  BUDDY1: "Buddy 1", // add this column header to your Sheet
+  BUDDY2: "Buddy 2", // add this column header to your Sheet
 };
 
 /** Entry point for all GET requests: ?action=getUser|findDomain&domain=... */
@@ -53,6 +55,10 @@ function doPost(e) {
 
     if (payload.action === "saveUser") {
       saveUserRecord(payload);
+      return jsonResponse({ success: true });
+    }
+    if (payload.action === "saveMatch") {
+      saveMatchRecord(payload);
       return jsonResponse({ success: true });
     }
     return jsonResponse({ success: false, error: "Unknown action" }, 400);
@@ -117,6 +123,41 @@ function saveUserRecord(payload) {
       sheet.getRange(rowIndex + 1, colIndex + 1).setValue(updates[columnName]);
     }
   });
+}
+
+/**
+ * Records a Buddy Match on all three people's rows: the person who
+ * generated it, and their two buddies — so the match is visible
+ * from any of the three rows. If the Sheet doesn't have the
+ * "Buddy 1"/"Buddy 2" columns yet, this silently does nothing
+ * instead of throwing, so older Sheets without those columns don't
+ * break the download flow.
+ */
+function saveMatchRecord(payload) {
+  const domain = normalizeDomain(payload.domain);
+  const buddy1 = normalizeDomain(payload.buddy1);
+  const buddy2 = normalizeDomain(payload.buddy2);
+  if (!domain || !buddy1 || !buddy2) throw new Error("Missing domain(s) for match");
+
+  const sheet = getSheet();
+  const headers = getHeaders(sheet);
+  const buddy1Col = headers.indexOf(COLUMNS.BUDDY1);
+  const buddy2Col = headers.indexOf(COLUMNS.BUDDY2);
+  if (buddy1Col === -1 || buddy2Col === -1) {
+    return; // Sheet hasn't been updated with the new columns — skip quietly
+  }
+
+  writeMatchToRow(domain, buddy1, buddy2, buddy1Col, buddy2Col);
+  writeMatchToRow(buddy1, domain, buddy2, buddy1Col, buddy2Col);
+  writeMatchToRow(buddy2, domain, buddy1, buddy1Col, buddy2Col);
+}
+
+function writeMatchToRow(rowDomain, otherA, otherB, buddy1Col, buddy2Col) {
+  const rowIndex = findRowByDomain(rowDomain);
+  if (rowIndex === -1) return; // unknown domain — skip rather than fail the whole match
+  const sheet = getSheet();
+  sheet.getRange(rowIndex + 1, buddy1Col + 1).setValue(otherA);
+  sheet.getRange(rowIndex + 1, buddy2Col + 1).setValue(otherB);
 }
 
 // ------------------------------------------------------------

@@ -45,10 +45,10 @@ export default function Login() {
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
           <input
             type="text"
-            placeholder="you@company.com"
+            placeholder="nhanltp"
             autoFocus
             {...register("domain", { required: "Please enter your domain." })}
-            className="w-full rounded-sm border border-line px-4 py-3 text-center focus:border-violet transition-colors"
+            className="w-full rounded-sm border border-line px-4 py-3 text-center text-base focus:border-violet transition-colors"
           />
           {(errors.domain || serverError) && (
             <p className="text-sm text-danger">{errors.domain?.message || serverError}</p>

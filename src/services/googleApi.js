@@ -88,6 +88,32 @@ export async function saveUser(userData) {
   return true;
 }
 
+/**
+ * POST ?action=saveMatch
+ * Records which two buddies a person matched with (Step 3), only
+ * called when they actually download the Buddy Team card — just
+ * previewing doesn't write anything. Updates all three rows
+ * (the person + both buddies) so the match is visible from any of
+ * their rows in the Sheet.
+ *
+ * Requires two extra columns in the Sheet: "Buddy 1" and "Buddy 2".
+ * See README.md for the exact column names to add.
+ */
+export async function saveMatch({ domain, buddy1, buddy2 }) {
+  const payload = { action: "saveMatch", domain, buddy1, buddy2 };
+
+  const data = await fetchWithTimeout(config.GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!data?.success) {
+    throw new Error(data?.error || "Could not save your buddy match. Please try again.");
+  }
+  return true;
+}
+
 /** Normalizes whatever shape the Apps Script returns into a consistent client-side object. */
 function normalizeUser(raw) {
   return {

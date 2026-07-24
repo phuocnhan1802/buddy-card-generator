@@ -64,7 +64,7 @@ const config = {
   // ----------------------------------------------------------
   // RITUALS
   // ----------------------------------------------------------
-  REQUIRED_RITUAL_COUNT: 3,
+  REQUIRED_RITUAL_COUNT: 2,
   DEFAULT_EMOJI_LIST: ["💬", "☕", "⭐", "📅", "🎯", "🤝", "📌", "🕒", "✅", "💡", "🎉", "🧠"],
 
   // ----------------------------------------------------------
@@ -162,7 +162,8 @@ const config = {
   // ----------------------------------------------------------
   MIN_INTEREST_LENGTH: 1,
   MAX_INTEREST_LENGTH: 24,
-  MAX_RITUAL_TEXT_LENGTH: 90,
+  // MAX_RITUAL_TEXT_LENGTH removed — rituals now allow unlimited length (per request).
+  // The card's auto-shrink (see KV_THEME below) handles long text gracefully.
 };
 
 export default config;

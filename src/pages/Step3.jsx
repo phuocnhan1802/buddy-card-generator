@@ -4,10 +4,11 @@ import Layout from "../components/Layout";
 import BuddyPreview from "../components/BuddyPreview";
 import Button from "../components/Button";
 import { useUserData } from "../hooks/useUserData";
-import { getUser } from "../services/googleApi";
+import { getUser, saveMatch } from "../services/googleApi";
 import { downloadBuddyTeam } from "../services/renderService";
 import { normalizeDomain } from "../utils/validators";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { useResponsiveScale } from "../hooks/useResponsiveScale";
 
 export default function Step3() {
   const { user, setStep } = useUserData();
@@ -19,6 +20,7 @@ export default function Step3() {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState("");
   const teamRef = useRef(null);
+  const teamScale = useResponsiveScale(config.BUDDY_CARD_PREVIEW_WIDTH);
 
   const validationError = useValidation({ domainA, domainB, buddyA, buddyB, currentDomain: user.domain });
 
@@ -39,6 +41,9 @@ export default function Step3() {
     setDownloading(true);
     setError("");
     try {
+      // Record the match in the Sheet only at download time (per request),
+      // so casually generating a preview doesn't write anything yet.
+      await saveMatch({ domain: user.domain, buddy1: buddyA.domain, buddy2: buddyB.domain });
       await downloadBuddyTeam(teamRef.current, [buddyA.name, user.name, buddyB.name]);
     } catch (err) {
       setError(err.message || "Could not download the Buddy Team card.");
@@ -72,7 +77,7 @@ export default function Step3() {
             </Button>
             {previewGenerated && (
               <Button onClick={handleDownload} loading={downloading} className="ml-auto">
-                Download Buddy Team
+                Share / Save Buddy Team
               </Button>
             )}
           </div>
@@ -80,10 +85,13 @@ export default function Step3() {
       }
       previewPanel={
         previewGenerated ? (
-          <BuddyPreview ref={teamRef} members={[buddyA, user, buddyB]} />
+          <BuddyPreview ref={teamRef} members={[buddyA, user, buddyB]} scale={teamScale} />
         ) : (
           <div
-            style={{ width: config.BUDDY_CARD_PREVIEW_WIDTH, height: config.BUDDY_CARD_PREVIEW_HEIGHT }}
+            style={{
+              width: config.BUDDY_CARD_PREVIEW_WIDTH * teamScale,
+              height: config.BUDDY_CARD_PREVIEW_HEIGHT * teamScale,
+            }}
             className="rounded-lg border-2 border-dashed border-line flex items-center justify-center text-center px-8"
           >
             <p className="text-ink-soft text-sm">
@@ -138,8 +146,8 @@ function BuddyDomainField({ label, domain, setDomain, buddy, setBuddy }) {
         type="text"
         value={domain}
         onChange={(e) => setDomain(e.target.value)}
-        placeholder="buddy@company.com"
-        className="w-full rounded-sm border border-line px-4 py-2.5 text-sm focus:border-violet"
+        placeholder="nhanltp"
+        className="w-full rounded-sm border border-line px-4 py-2.5 text-base md:text-sm focus:border-violet"
       />
       <div className="mt-1.5 h-5 text-sm">
         {searching && <span className="text-ink-soft">Searching…</span>}

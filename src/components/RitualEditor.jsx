@@ -77,12 +77,11 @@ export default function RitualEditor({ value = [], onChange }) {
                 </option>
               ))}
             </select>
-            <input
-              type="text"
+            <textarea
               value={ritual.text}
               onChange={(e) => updateRitual(ritual.id, { text: e.target.value })}
-              maxLength={config.MAX_RITUAL_TEXT_LENGTH}
-              className="flex-1 bg-transparent text-sm focus:outline-none"
+              rows={1}
+              className="flex-1 bg-transparent text-sm md:text-sm text-base focus:outline-none resize-none py-1"
             />
             <button
               type="button"
@@ -115,19 +114,18 @@ export default function RitualEditor({ value = [], onChange }) {
             </option>
           ))}
         </select>
-        <input
-          type="text"
+        <textarea
           value={draftText}
           onChange={(e) => setDraftText(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               addRitual();
             }
           }}
-          maxLength={config.MAX_RITUAL_TEXT_LENGTH}
-          placeholder="e.g. Weekly coffee chat"
-          className="flex-1 rounded-sm border border-line px-3.5 py-2 text-sm focus:border-violet"
+          rows={1}
+          placeholder="vd: Monthly 1:1"
+          className="flex-1 rounded-sm border border-line px-3.5 py-2 text-base md:text-sm focus:border-violet resize-none"
         />
         <button
           type="button"
